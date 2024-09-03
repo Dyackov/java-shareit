@@ -13,13 +13,26 @@ import ru.practicum.shareit.user.service.UserServiceImpl;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Реализация интерфейса {@link ItemService}, предоставляющая операции с вещами.
+ * Включает создание, обновление, удаление, получение и поиск доступных вещей.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ItemServiceImpl implements ItemService {
+
     private final ItemStorage inMemoryItemStorage;
     private final UserServiceImpl userServiceImpl;
 
+    /**
+     * Создает новую вещь и сохраняет её в хранилище.
+     * Проверяет, существует ли пользователь с указанным ID перед созданием вещи.
+     *
+     * @param userId  Уникальный идентификатор пользователя, создающего вещь
+     * @param itemDto DTO для создания новой вещи
+     * @return DTO созданной вещи с присвоенным ID
+     */
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
         Item item = ItemMapper.toItem(itemDto);
@@ -32,6 +45,16 @@ public class ItemServiceImpl implements ItemService {
         return itemResultDto;
     }
 
+    /**
+     * Обновляет данные существующей вещи.
+     * Проверяет права на редактирование на основе ID пользователя.
+     *
+     * @param userId  Уникальный идентификатор пользователя, пытающегося обновить вещь
+     * @param itemId  Уникальный идентификатор вещи, которую нужно обновить
+     * @param itemDto DTO с обновленными данными вещи
+     * @return DTO обновленной вещи
+     * @throws NotFoundException если пользователь не авторизован для редактирования вещи
+     */
     @Override
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
         Item item = inMemoryItemStorage.getItemById(itemId);
@@ -46,12 +69,24 @@ public class ItemServiceImpl implements ItemService {
         return resultDto;
     }
 
+    /**
+     * Получает вещь по её уникальному идентификатору.
+     *
+     * @param itemId Уникальный идентификатор вещи
+     * @return DTO найденной вещи
+     */
     @Override
     public ItemDto getItemById(long itemId) {
         log.info("Получена вещь. ID вещи: {}", itemId);
         return ItemMapper.toItemDto(inMemoryItemStorage.getItemById(itemId));
     }
 
+    /**
+     * Получает список всех вещей, принадлежащих пользователю с указанным идентификатором.
+     *
+     * @param userId Уникальный идентификатор владельца вещей
+     * @return Список DTO всех вещей пользователя
+     */
     @Override
     public List<ItemDto> getAllItemsFromUser(long userId) {
         userServiceImpl.getUserByIdDto(userId);
@@ -59,6 +94,13 @@ public class ItemServiceImpl implements ItemService {
         return inMemoryItemStorage.getAllItemsFromUser(userId).stream().map(ItemMapper::toItemDto).toList();
     }
 
+    /**
+     * Выполняет поиск доступных вещей по тексту.
+     * Ищет в названии и описании вещи.
+     *
+     * @param text Текст для поиска
+     * @return Список DTO найденных доступных вещей
+     */
     @Override
     public List<ItemDto> searchAvailableItemsByText(String text) {
         List<Item> allItems = inMemoryItemStorage.getAllItems();
@@ -75,6 +117,14 @@ public class ItemServiceImpl implements ItemService {
         return resultSearch;
     }
 
+    /**
+     * Удаляет вещь по её уникальному идентификатору.
+     * Проверяет права на удаление на основе ID пользователя.
+     *
+     * @param userId Уникальный идентификатор пользователя, пытающегося удалить вещь
+     * @param itemId Уникальный идентификатор вещи для удаления
+     * @throws NotFoundException если пользователь не авторизован для удаления вещи
+     */
     @Override
     public void deleteItemById(long userId, long itemId) {
         checkAuthorization(userId, inMemoryItemStorage.getItemById(itemId));
@@ -82,6 +132,11 @@ public class ItemServiceImpl implements ItemService {
         log.info("Удалена вещь. ID владельца: {}, ID вещи: {}", userId, itemId);
     }
 
+    /**
+     * Удаляет все вещи, принадлежащие пользователю с указанным идентификатором.
+     *
+     * @param userId Уникальный идентификатор владельца вещей для удаления
+     */
     @Override
     public void deleteAllItemsByUser(long userId) {
         userServiceImpl.getUserByIdDto(userId);
@@ -89,12 +144,22 @@ public class ItemServiceImpl implements ItemService {
         log.info("Удалены все вещи. ID владельца: {}", userId);
     }
 
+    /**
+     * Удаляет все вещи из хранилища.
+     */
     @Override
     public void deleteAllItems() {
         inMemoryItemStorage.deleteAllItems();
         log.info("Удалены все вещи.");
     }
 
+    /**
+     * Проверяет права на редактирование или удаление вещи.
+     * Выбрасывает исключение {@link NotFoundException}, если пользователь не является владельцем вещи.
+     *
+     * @param userId Уникальный идентификатор пользователя
+     * @param item   Вещь, для которой проверяется авторизация
+     */
     private void checkAuthorization(long userId, Item item) {
         userServiceImpl.getUserByIdDto(userId);
         log.debug("Проверка авторизации. ID владельца: {}, ID вещи: {}", userId, item.getId());
