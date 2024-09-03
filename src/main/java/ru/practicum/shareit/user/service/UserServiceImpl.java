@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.error.exception.ConflictException;
 import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.item.storage.InMemoryItemStorage;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -14,8 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Реализация интерфейса UserService, предоставляющая основные операции с пользователями.
+ * Реализация интерфейса {@link UserService}, предоставляющая основные операции с пользователями.
  * Включает создание, обновление, удаление и получение пользователей, а также валидацию email.
+ * Также обрабатывает удаление всех вещей, связанных с пользователем.
  */
 @Slf4j
 @Service
@@ -23,6 +25,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage inMemoryUserStorage;
+    private final InMemoryItemStorage inMemoryItemStorage;
 
     /**
      * Создает нового пользователя на основе переданного DTO и сохраняет его в хранилище.
@@ -78,16 +81,17 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Удаляет пользователя по его ID из хранилища.
+     * Удаляет пользователя по его ID из хранилища и все связанные с ним вещи.
      *
      * @param userId уникальный идентификатор пользователя для удаления
      * @throws NotFoundException если пользователь с указанным ID не найден
      */
     @Override
     public void deleteUserById(long userId) {
-        inMemoryUserStorage.getUserById(userId);
+        inMemoryUserStorage.getUserById(userId); // Проверка на существование пользователя
         inMemoryUserStorage.deleteUserById(userId);
-        log.info("Удалён пользователь. ID пользователя: {}", userId);
+        inMemoryItemStorage.deleteAllItemsByUser(userId); // Удаление всех вещей пользователя
+        log.info("Удалён пользователь и его вещи. ID пользователя: {}", userId);
     }
 
     /**
@@ -102,17 +106,18 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Удаляет всех пользователей из хранилища.
+     * Удаляет всех пользователей из хранилища и все их вещи.
      */
     @Override
     public void deleteAllUsers() {
         inMemoryUserStorage.deleteAllUsers();
-        log.info("Удалёны все пользователи.");
+        inMemoryItemStorage.deleteAllItems(); // Удаление всех вещей
+        log.info("Удалёны все пользователи и все вещи.");
     }
 
     /**
      * Валидирует email пользователя на уникальность в хранилище.
-     * Если пользователь с таким email уже существует, выбрасывается ConflictException.
+     * Если пользователь с таким email уже существует, выбрасывается {@link ConflictException}.
      *
      * @param email email пользователя для проверки
      * @throws ConflictException если пользователь с таким email уже существует
@@ -123,5 +128,4 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("Пользователь с email: " + email + " уже существует.");
         }
     }
-
 }
