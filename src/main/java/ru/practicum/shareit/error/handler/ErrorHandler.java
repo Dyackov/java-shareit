@@ -1,6 +1,7 @@
 package ru.practicum.shareit.error.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -9,27 +10,28 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.error.exception.ConflictException;
-import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.*;
 import ru.practicum.shareit.error.model.ErrorResponse;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Класс ErrorHandler предназначен для обработки исключений, возникающих в приложении.
- * <p>
- * Этот класс перехватывает исключения, выбрасываемые в контроллерах, и возвращает соответствующие HTTP-статусы и сообщения об ошибках.
+ * Обработчик исключений, отвечающий за централизованное управление ошибками,
+ * возникающими в приложении.
+ *
+ * Позволяет обрабатывать различные типы исключений и возвращать
+ * соответствующие сообщения об ошибках в формате {@link ErrorResponse}.
  */
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
 
     /**
-     * Обрабатывает исключение NotFoundException, выбрасываемое при попытке найти несуществующий ресурс.
+     * Обработка исключения NotFoundException.
      *
-     * @param exception исключение NotFoundException.
-     * @return объект ErrorResponse с сообщением об ошибке и статусом HTTP 404 (NOT FOUND).
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке.
      */
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -39,10 +41,10 @@ public class ErrorHandler {
     }
 
     /**
-     * Обрабатывает исключение ConflictException, выбрасываемое при возникновении конфликта данных (например, при попытке создать пользователя с уже существующим email).
+     * Обработка исключения ConflictException.
      *
-     * @param exception исключение ConflictException.
-     * @return объект ErrorResponse с сообщением об ошибке и статусом HTTP 409 (CONFLICT).
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке.
      */
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
@@ -52,10 +54,10 @@ public class ErrorHandler {
     }
 
     /**
-     * Обрабатывает исключение HttpMessageNotReadableException, возникающее при неправильном формате запроса (например, при неверном формате JSON).
+     * Обработка исключения HttpMessageNotReadableException.
      *
-     * @param exception исключение HttpMessageNotReadableException.
-     * @return объект ErrorResponse с сообщением об ошибке и статусом HTTP 400 (BAD REQUEST).
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке.
      */
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -65,11 +67,10 @@ public class ErrorHandler {
     }
 
     /**
-     * Обрабатывает исключение MethodArgumentNotValidException, выбрасываемое при нарушении валидации входных данных.
-     * Собирает все ошибки валидации и возвращает их в виде строки.
+     * Обработка исключения MethodArgumentNotValidException.
      *
-     * @param exception исключение MethodArgumentNotValidException.
-     * @return объект ErrorResponse с сообщением о валидационной ошибке и статусом HTTP 400 (BAD REQUEST).
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке валидации.
      */
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -79,14 +80,18 @@ public class ErrorHandler {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
         log.warn(exception.getMessage());
-        return new ErrorResponse("Ошибка валидации.", errors.toString());
+        // Преобразование карты ошибок в строку
+        String errorMessage = errors.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .reduce("", (acc, error) -> acc + error);
+        return new ErrorResponse("Ошибка валидации.", errorMessage.trim());
     }
 
     /**
-     * Обрабатывает исключение MissingRequestHeaderException, возникающее при отсутствии необходимого заголовка в запросе.
+     * Обработка исключения MissingRequestHeaderException.
      *
-     * @param exception исключение MissingRequestHeaderException.
-     * @return объект ErrorResponse с сообщением об ошибке и статусом HTTP 400 (BAD REQUEST).
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке.
      */
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -96,4 +101,59 @@ public class ErrorHandler {
         return new ErrorResponse("Ошибка.", description);
     }
 
+    /**
+     * Обработка исключения DataIntegrityViolationException.
+     *
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке базы данных.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        String message = "Ошибка базы данных: " + exception.getMostSpecificCause().getMessage();
+        log.error("DataIntegrityViolationException: {}", message);
+        return new ErrorResponse("Ошибка при обработке данных.", message);
+    }
+
+    /**
+     * Обработка исключения ValidationException.
+     *
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке.
+     */
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse validateRequestBooking(final ValidationException exception) {
+        String description = exception.getMessage();
+        log.warn(description);
+        return new ErrorResponse("Ошибка.", description);
+    }
+
+    /**
+     * Обработка исключения ForbiddenException.
+     *
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке.
+     */
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse AuthorizationUser(final ForbiddenException exception) {
+        String description = exception.getMessage();
+        log.warn(description);
+        return new ErrorResponse("Ошибка.", description);
+    }
+
+    /**
+     * Обработка исключения UnsupportedStateException.
+     *
+     * @param exception Исключение, которое нужно обработать.
+     * @return {@link ErrorResponse} с сообщением об ошибке.
+     */
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleUnsupportedStateException(final UnsupportedStateException exception) {
+        String description = exception.getMessage();
+        log.warn(description);
+        return new ErrorResponse("Ошибка.", description);
+    }
 }

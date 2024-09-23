@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userServiceImpl;
+    private final UserService jpaUserService;
 
     /**
      * Обрабатывает POST-запрос для создания нового пользователя.
@@ -30,7 +30,7 @@ public class UserController {
     @PostMapping
     public UserDto createUser(@RequestBody @Valid UserDto userDto) {
         log.info("Запрос на создание пользователя: \n{}", userDto);
-        return userServiceImpl.createUserDto(userDto);
+        return jpaUserService.createUserDto(userDto);
     }
 
     /**
@@ -43,7 +43,7 @@ public class UserController {
     @PatchMapping("/{userId}")
     public UserDto updateUser(@PathVariable long userId, @RequestBody UserDto userDto) {
         log.info("Запрос на обновление пользователя. ID пользователя: {}.\nНовые данные: {}", userId, userDto);
-        return userServiceImpl.updateUserDto(userId, userDto);
+        return jpaUserService.updateUserDto(userId, userDto);
     }
 
     /**
@@ -55,7 +55,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public UserDto getUserById(@PathVariable long userId) {
         log.info("Запрос на получение пользователя. ID пользователя: {}", userId);
-        return userServiceImpl.getUserByIdDto(userId);
+        return jpaUserService.getUserByIdDto(userId);
     }
 
     /**
@@ -66,7 +66,7 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public void deleteUserById(@PathVariable long userId) {
         log.info("Запрос на удаление пользователя. ID пользователя: {}", userId);
-        userServiceImpl.deleteUserById(userId);
+        jpaUserService.deleteUserById(userId);
     }
 
     /**
@@ -77,7 +77,7 @@ public class UserController {
     @GetMapping
     public List<UserDto> getAllUsers() {
         log.info("Запрос на получение списка всех пользователей.");
-        return userServiceImpl.getAllUsersDto();
+        return jpaUserService.getAllUsersDto();
     }
 
     /**
@@ -86,7 +86,7 @@ public class UserController {
     @DeleteMapping()
     public void deleteAllUsers() {
         log.info("Запрос на удаление всех пользователей.");
-        userServiceImpl.deleteAllUsers();
+        jpaUserService.deleteAllUsers();
     }
 
 }
