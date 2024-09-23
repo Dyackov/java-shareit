@@ -94,11 +94,11 @@ public class ItemServiceImpl implements ItemService {
         Item item = checkItemExist(itemId);
         ItemDtoBooking itemDtoBooking = ItemMapper.toItemDtoBooking(item);
         if (item.getOwner().getId() == userId) {
-            itemDtoBooking.setLastBooking(BookingMapper.toBookingDtoItem
-                    (jpaBookingRepository.findLastBookingByBookerId(
+            itemDtoBooking.setLastBooking(BookingMapper.toBookingDtoItem(
+                    jpaBookingRepository.findLastBookingByBookerId(
                             itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
-            itemDtoBooking.setNextBooking(BookingMapper.toBookingDtoItem
-                    (jpaBookingRepository.findNextBookingByBookerId(
+            itemDtoBooking.setNextBooking(BookingMapper.toBookingDtoItem(
+                    jpaBookingRepository.findNextBookingByBookerId(
                             itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
         }
         jpaCommentRepository.findCommentsByItemId(itemId).ifPresent(comment ->
@@ -119,11 +119,11 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items = jpaItemRepository.findAllByOwnerId(userId);
         List<ItemDtoBooking> itemDtoBookings = items.stream().map(ItemMapper::toItemDtoBooking).toList();
         for (ItemDtoBooking itemDtoBooking : itemDtoBookings) {
-            itemDtoBooking.setLastBooking(BookingMapper.toBookingDtoItem
-                    (jpaBookingRepository.findLastBookingByBookerId(
+            itemDtoBooking.setLastBooking(BookingMapper.toBookingDtoItem(
+                    jpaBookingRepository.findLastBookingByBookerId(
                             itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
-            itemDtoBooking.setNextBooking(BookingMapper.toBookingDtoItem
-                    (jpaBookingRepository.findNextBookingByBookerId(
+            itemDtoBooking.setNextBooking(BookingMapper.toBookingDtoItem(
+                    jpaBookingRepository.findNextBookingByBookerId(
                             itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
             jpaCommentRepository.findCommentsByItemId(itemDtoBooking.getId()).ifPresent(comment ->
                     itemDtoBooking.setComments(comment.stream().map(CommentMapper::toCommentDtoResponse).toList()));

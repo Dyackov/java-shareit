@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
