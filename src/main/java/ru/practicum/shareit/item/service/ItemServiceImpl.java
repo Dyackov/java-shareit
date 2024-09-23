@@ -35,7 +35,6 @@ import java.util.Optional;
 @Slf4j
 public class ItemServiceImpl implements ItemService {
 
-    private final LocalDateTime NOW = LocalDateTime.now();
     private final JpaItemRepository jpaItemRepository;
     private final UserServiceImpl userServiceImpl;
     private final JpaBookingRepository jpaBookingRepository;
@@ -96,11 +95,11 @@ public class ItemServiceImpl implements ItemService {
         ItemDtoBooking itemDtoBooking = ItemMapper.toItemDtoBooking(item);
         if (item.getOwner().getId() == userId) {
             itemDtoBooking.setLastBooking(BookingMapper.toBookingDtoItem
-                    (jpaBookingRepository.findLastBookingByBookerId(itemDtoBooking.getId(), LocalDateTime.now())
-                            .orElse(null)));
+                    (jpaBookingRepository.findLastBookingByBookerId(
+                            itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
             itemDtoBooking.setNextBooking(BookingMapper.toBookingDtoItem
-                    (jpaBookingRepository.findNextBookingByBookerId(itemDtoBooking.getId(), LocalDateTime.now())
-                            .orElse(null)));
+                    (jpaBookingRepository.findNextBookingByBookerId(
+                            itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
         }
         jpaCommentRepository.findCommentsByItemId(itemId).ifPresent(comment ->
                 itemDtoBooking.setComments(comment.stream().map(CommentMapper::toCommentDtoResponse).toList()));
@@ -121,11 +120,11 @@ public class ItemServiceImpl implements ItemService {
         List<ItemDtoBooking> itemDtoBookings = items.stream().map(ItemMapper::toItemDtoBooking).toList();
         for (ItemDtoBooking itemDtoBooking : itemDtoBookings) {
             itemDtoBooking.setLastBooking(BookingMapper.toBookingDtoItem
-                    (jpaBookingRepository.findLastBookingByBookerId(itemDtoBooking.getId(), LocalDateTime.now())
-                            .orElse(null)));
+                    (jpaBookingRepository.findLastBookingByBookerId(
+                            itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
             itemDtoBooking.setNextBooking(BookingMapper.toBookingDtoItem
-                    (jpaBookingRepository.findNextBookingByBookerId(itemDtoBooking.getId(), LocalDateTime.now())
-                            .orElse(null)));
+                    (jpaBookingRepository.findNextBookingByBookerId(
+                            itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
             jpaCommentRepository.findCommentsByItemId(itemDtoBooking.getId()).ifPresent(comment ->
                     itemDtoBooking.setComments(comment.stream().map(CommentMapper::toCommentDtoResponse).toList()));
         }
@@ -237,7 +236,7 @@ public class ItemServiceImpl implements ItemService {
                 .text(commentDtoRequest.text())
                 .item(item)
                 .author(author)
-                .created(NOW)
+                .created(LocalDateTime.now())
                 .build();
         jpaCommentRepository.save(comment);
         log.info("Создан комментарий DAO:\n{}", comment);

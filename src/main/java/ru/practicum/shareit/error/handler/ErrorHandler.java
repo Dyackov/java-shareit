@@ -19,7 +19,6 @@ import java.util.Map;
 /**
  * Обработчик исключений, отвечающий за централизованное управление ошибками,
  * возникающими в приложении.
- *
  * Позволяет обрабатывать различные типы исключений и возвращать
  * соответствующие сообщения об ошибках в формате {@link ErrorResponse}.
  */
@@ -137,7 +136,7 @@ public class ErrorHandler {
      */
     @ExceptionHandler
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponse AuthorizationUser(final ForbiddenException exception) {
+    public ErrorResponse authorizationUser(final ForbiddenException exception) {
         String description = exception.getMessage();
         log.warn(description);
         return new ErrorResponse("Ошибка.", description);

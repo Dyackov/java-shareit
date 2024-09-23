@@ -29,8 +29,8 @@ public interface JpaItemRepository extends JpaRepository<Item, Long> {
      * @param description текст для поиска в описании вещи
      * @return список доступных вещей, соответствующих критериям поиска
      */
-    List<Item> findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase
-    (String name, String description);
+    List<Item> findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase(
+            String name, String description);
 
     /**
      * Удаляет все вещи, принадлежащие пользователю по его идентификатору.
