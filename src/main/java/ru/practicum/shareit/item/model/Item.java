@@ -1,27 +1,39 @@
 package ru.practicum.shareit.item.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.practicum.shareit.user.model.User;
 
 /**
  * Представляет собой модель данных для вещи.
  * Содержит информацию о вещи, включая её идентификатор, название, описание, доступность,
  * владельца и запрос, с которым вещь может быть связана.
  */
+@Entity
+@Table(name = "items", schema = "public")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Item {
 
     /**
      * Уникальный идентификатор вещи.
      * Устанавливается системой при создании вещи.
      */
+    @Id
+    @Column(name = "item_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
      * Название вещи.
      * Например, "Сверло" или "Книга по Java".
      */
+    @Column(nullable = false)
     private String name;
 
     /**
@@ -40,7 +52,9 @@ public class Item {
      * Идентификатор владельца вещи.
      * Указывает на пользователя, который является владельцем этой вещи.
      */
-    private Long owner;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     /**
      * Запрос, с которым может быть связана вещь.

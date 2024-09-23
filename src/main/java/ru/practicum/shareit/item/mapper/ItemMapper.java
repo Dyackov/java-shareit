@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.mapper;
 
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoBooking;
 import ru.practicum.shareit.item.model.Item;
 
 /**
@@ -38,6 +39,22 @@ public class ItemMapper {
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
                 .request(itemDto.getRequest())
+                .build();
+    }
+
+    /**
+     * Преобразует объект модели {@link Item} в объект передачи данных {@link ItemDtoBooking}.
+     *
+     * @param item Объект модели {@link Item}, который необходимо преобразовать.
+     * @return Объект передачи данных {@link ItemDtoBooking}, содержащий данные из {@link Item}.
+     */
+    public static ItemDtoBooking toItemDtoBooking(Item item) {
+        return ItemDtoBooking.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .request(item.getRequest())
                 .build();
     }
 
