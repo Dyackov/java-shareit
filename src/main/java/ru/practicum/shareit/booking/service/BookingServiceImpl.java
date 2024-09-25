@@ -14,9 +14,9 @@ import ru.practicum.shareit.error.exception.ForbiddenException;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.service.ItemServiceImpl;
+import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserServiceImpl;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,8 +34,8 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
 
     private final JpaBookingRepository jpaBookingRepository;
-    private final UserServiceImpl userServiceImpl;
-    private final ItemServiceImpl itemServiceImpl;
+    private final UserService userServiceImpl;
+    private final ItemService itemServiceImpl;
 
     /**
      * Создает новое бронирование.
@@ -69,7 +69,7 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Подтверждает или отклоняет бронирование.
      *
-     * @param userId   Идентификатор пользователя, который подтверждает или отклоняет бронирование.
+     * @param userId    Идентификатор пользователя, который подтверждает или отклоняет бронирование.
      * @param bookingId Идентификатор бронирования, которое нужно подтвердить или отклонить.
      * @param approved  Статус подтверждения: true для подтверждения, false для отклонения.
      * @return Обновленное бронирование в виде объекта BookingDto.
@@ -121,11 +121,15 @@ public class BookingServiceImpl implements BookingService {
         log.info("Получен список бронирований арендатором. Состояние: {}, ID Пользователя: {}", state, userId);
         return switch (state) {
             case ALL -> toBookingDtoList(jpaBookingRepository.findAllByBookerIdOrderByStartDesc(userId));
-            case CURRENT -> toBookingDtoList(jpaBookingRepository.findAllByBookerStateCurrent(userId, LocalDateTime.now()));
+            case CURRENT ->
+                    toBookingDtoList(jpaBookingRepository.findAllByBookerStateCurrent(userId, LocalDateTime.now()));
             case PAST -> toBookingDtoList(jpaBookingRepository.findAllByBookerStatePast(userId, LocalDateTime.now()));
-            case FUTURE -> toBookingDtoList(jpaBookingRepository.findAllByBookerStateFuture(userId, LocalDateTime.now()));
-            case WAITING -> toBookingDtoList(jpaBookingRepository.findAllByBookerIdAndStatus(userId, BookingStatus.WAITING));
-            case REJECTED -> toBookingDtoList(jpaBookingRepository.findAllByBookerIdAndStatus(userId, BookingStatus.REJECTED));
+            case FUTURE ->
+                    toBookingDtoList(jpaBookingRepository.findAllByBookerStateFuture(userId, LocalDateTime.now()));
+            case WAITING ->
+                    toBookingDtoList(jpaBookingRepository.findAllByBookerIdAndStatus(userId, BookingStatus.WAITING));
+            case REJECTED ->
+                    toBookingDtoList(jpaBookingRepository.findAllByBookerIdAndStatus(userId, BookingStatus.REJECTED));
         };
     }
 
@@ -142,11 +146,15 @@ public class BookingServiceImpl implements BookingService {
         log.info("Получен список бронирований владельцем вещей. Состояние: {}, ID Пользователя: {}", state, userId);
         return switch (state) {
             case ALL -> toBookingDtoList(jpaBookingRepository.findAllByOwnerId(userId));
-            case CURRENT -> toBookingDtoList(jpaBookingRepository.findAllByOwnerStateCurrent(userId, LocalDateTime.now()));
+            case CURRENT ->
+                    toBookingDtoList(jpaBookingRepository.findAllByOwnerStateCurrent(userId, LocalDateTime.now()));
             case PAST -> toBookingDtoList(jpaBookingRepository.findAllByOwnerStatePast(userId, LocalDateTime.now()));
-            case FUTURE -> toBookingDtoList(jpaBookingRepository.findAllByOwnerStateFuture(userId, LocalDateTime.now()));
-            case WAITING -> toBookingDtoList(jpaBookingRepository.findAllByOwnerIdAndStatus(userId, BookingStatus.WAITING));
-            case REJECTED -> toBookingDtoList(jpaBookingRepository.findAllByOwnerIdAndStatus(userId, BookingStatus.REJECTED));
+            case FUTURE ->
+                    toBookingDtoList(jpaBookingRepository.findAllByOwnerStateFuture(userId, LocalDateTime.now()));
+            case WAITING ->
+                    toBookingDtoList(jpaBookingRepository.findAllByOwnerIdAndStatus(userId, BookingStatus.WAITING));
+            case REJECTED ->
+                    toBookingDtoList(jpaBookingRepository.findAllByOwnerIdAndStatus(userId, BookingStatus.REJECTED));
         };
     }
 
@@ -169,7 +177,7 @@ public class BookingServiceImpl implements BookingService {
      * Проверяет авторизацию пользователя для работы с конкретным бронированием.
      *
      * @param userId  Идентификатор пользователя, который пытается получить доступ к бронированию.
-     * @param booking  Объект Booking, для которого нужно проверить авторизацию.
+     * @param booking Объект Booking, для которого нужно проверить авторизацию.
      */
     @Override
     public void checkUserAuthorizationForBooking(long userId, Booking booking) {

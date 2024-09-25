@@ -3,10 +3,7 @@ package ru.practicum.shareit.user.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Класс User представляет модель пользователя в системе.
@@ -26,7 +23,8 @@ import lombok.NoArgsConstructor;
  */
 @Entity
 @Table(name = "users", schema = "public")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
