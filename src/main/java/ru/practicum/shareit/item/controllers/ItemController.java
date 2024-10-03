@@ -4,22 +4,25 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDtoRequest;
+import ru.practicum.shareit.item.dto.CommentDtoResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.item.dto.ItemDtoBooking;
+import ru.practicum.shareit.item.service.ItemServiceImpl;
 
 import java.util.List;
 
 /**
- * Контроллер для обработки HTTP-запросов, связанных с вещами.
- * Предоставляет CRUD операции для управления вещами, такие как создание, обновление, получение и удаление.
- * Обрабатывает запросы и делегирует выполнение бизнес-логики в {@link ItemService}.
+ * Контроллер для управления вещами в системе.
+ * Предоставляет REST API для создания, обновления, получения и удаления вещей,
+ * а также для поиска доступных для аренды вещей.
  */
 @RestController
 @RequestMapping("/items")
 @Slf4j
 @RequiredArgsConstructor
 public class ItemController {
-    private final ItemService itemServiceImpl;
+    private final ItemServiceImpl itemServiceImpl;
 
     /**
      * Создает новую вещь.
@@ -55,22 +58,22 @@ public class ItemController {
      * Получает информацию о вещи по ее идентификатору.
      *
      * @param itemId уникальный идентификатор вещи
-     * @return {@link ItemDto} с данными вещи
+     * @return {@link ItemDtoBooking} с данными вещи
      */
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable long itemId) {
-        log.info("Запрос на получение вещи. ID вещи: {}", itemId);
-        return itemServiceImpl.getItemById(itemId);
+    public ItemDtoBooking getItemById(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
+        log.info("Запрос на получение вещи. ID пользователя:{}, ID вещи: {}", userId, itemId);
+        return itemServiceImpl.getItemById(userId, itemId);
     }
 
     /**
      * Получает список всех вещей, принадлежащих пользователю.
      *
      * @param userId уникальный идентификатор пользователя
-     * @return список {@link ItemDto} всех вещей пользователя
+     * @return список {@link ItemDtoBooking} всех вещей пользователя
      */
     @GetMapping
-    public List<ItemDto> getAllItemsFromUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemDtoBooking> getAllItemsFromUser(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Запрос на получение списка всех вещей владельца. ID владельца: {}", userId);
         return itemServiceImpl.getAllItemsFromUser(userId);
     }
@@ -108,6 +111,23 @@ public class ItemController {
     public void deleteAllItems(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Запрос на удаление всех вещей. ID пользователя: {}", userId);
         itemServiceImpl.deleteAllItemsByUser(userId);
+    }
+
+    /**
+     * Создает комментарий для вещи.
+     *
+     * @param authorId          уникальный идентификатор пользователя, оставляющего комментарий
+     * @param itemId            уникальный идентификатор вещи
+     * @param commentDtoRequest DTO, содержащий данные комментария
+     * @return созданный {@link CommentDtoResponse} с информацией о комментарии
+     */
+    @PostMapping("/{itemId}/comment")
+    public CommentDtoResponse createComment(@RequestHeader("X-Sharer-User-Id") long authorId,
+                                            @PathVariable long itemId,
+                                            @RequestBody CommentDtoRequest commentDtoRequest) {
+        log.info("Запрос на создание комментария вещи. ID пользователя: {}, ID вещи: {}, Комментарий:\n{}",
+                authorId, itemId, commentDtoRequest);
+        return itemServiceImpl.createComment(authorId, itemId, commentDtoRequest);
     }
 
 }

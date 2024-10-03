@@ -1,6 +1,10 @@
 package ru.practicum.shareit.item.service;
 
+import ru.practicum.shareit.item.dto.CommentDtoRequest;
+import ru.practicum.shareit.item.dto.CommentDtoResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoBooking;
+import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
@@ -38,7 +42,7 @@ public interface ItemService {
      * @param itemId Уникальный идентификатор вещи
      * @return DTO найденной вещи
      */
-    ItemDto getItemById(long itemId);
+    ItemDtoBooking getItemById(long userId, long itemId);
 
     /**
      * Получает список всех вещей, принадлежащих пользователю с указанным идентификатором.
@@ -46,7 +50,7 @@ public interface ItemService {
      * @param userId Уникальный идентификатор владельца вещей
      * @return Список DTO всех вещей пользователя
      */
-    List<ItemDto> getAllItemsFromUser(long userId);
+    List<ItemDtoBooking> getAllItemsFromUser(long userId);
 
     /**
      * Выполняет поиск доступных вещей по тексту.
@@ -78,4 +82,29 @@ public interface ItemService {
      */
     void deleteAllItems();
 
+    /**
+     * Проверяет существование вещи по её идентификатору.
+     *
+     * @param itemId Уникальный идентификатор вещи
+     * @return Объект модели {@link Item}
+     */
+    Item checkItemExist(long itemId);
+
+    /**
+     * Проверяет авторизацию пользователя для работы с вещью.
+     *
+     * @param userId Уникальный идентификатор пользователя
+     * @param item Объект модели {@link Item}
+     */
+    void checkUserAuthorizationForItem(long userId, Item item);
+
+    /**
+     * Создает комментарий к вещи.
+     *
+     * @param userId Уникальный идентификатор пользователя, оставляющего комментарий
+     * @param itemId Уникальный идентификатор вещи
+     * @param commentDtoRequest DTO с данными комментария
+     * @return DTO созданного комментария
+     */
+    CommentDtoResponse createComment(long userId, long itemId, CommentDtoRequest commentDtoRequest);
 }

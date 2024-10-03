@@ -74,7 +74,7 @@ public class InMemoryItemStorage implements ItemStorage {
     @Override
     public List<Item> getAllItemsFromUser(long userId) {
         log.debug("Получен список вещей из хранилища. ID владельца {}", userId);
-        return new ArrayList<>(items.values().stream().filter(item -> item.getOwner() == userId).toList());
+        return new ArrayList<>(items.values().stream().filter(item -> item.getOwner().getId() == userId).toList());
     }
 
     /**
@@ -106,7 +106,7 @@ public class InMemoryItemStorage implements ItemStorage {
      */
     @Override
     public void deleteAllItemsByUser(long userId) {
-        items.entrySet().removeIf(item -> item.getValue().getOwner() == userId);
+        items.entrySet().removeIf(item -> item.getValue().getOwner().getId() == userId);
         log.debug("Удалены все вещи из хранилища. ID владельца: {}", userId);
     }
 

@@ -3,42 +3,56 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.storage.JpaBookingRepository;
+import ru.practicum.shareit.error.exception.ForbiddenException;
 import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.ValidationException;
+import ru.practicum.shareit.item.dto.CommentDtoRequest;
+import ru.practicum.shareit.item.dto.CommentDtoResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoBooking;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.item.storage.JpaCommentRepository;
+import ru.practicum.shareit.item.storage.JpaItemRepository;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Реализация интерфейса {@link ItemService}, предоставляющая операции с вещами.
- * Включает создание, обновление, удаление, получение и поиск доступных вещей.
+ * Реализация сервиса для управления вещами.
+ * Этот класс предоставляет функционал для создания, обновления,
+ * получения и удаления вещей, а также для работы с комментариями к ним.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ItemServiceImpl implements ItemService {
 
-    private final ItemStorage inMemoryItemStorage;
+    private final JpaItemRepository jpaItemRepository;
     private final UserServiceImpl userServiceImpl;
+    private final JpaBookingRepository jpaBookingRepository;
+    private final JpaCommentRepository jpaCommentRepository;
 
     /**
-     * Создает новую вещь и сохраняет её в хранилище.
-     * Проверяет, существует ли пользователь с указанным ID перед созданием вещи.
+     * Создает новую вещь и сохраняет её в базе данных.
      *
-     * @param userId  Уникальный идентификатор пользователя, создающего вещь
-     * @param itemDto DTO для создания новой вещи
-     * @return DTO созданной вещи с присвоенным ID
+     * @param userId  идентификатор пользователя, создающего вещь
+     * @param itemDto DTO объекта вещи, который необходимо создать
+     * @return созданная вещь в виде DTO
      */
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
         Item item = ItemMapper.toItem(itemDto);
-        userServiceImpl.getUserByIdDto(userId);
-        item.setOwner(userId);
-        Item itemResultDao = inMemoryItemStorage.createItem(item);
+        User user = userServiceImpl.checkUserExist(userId);
+        item.setOwner(user);
+        Item itemResultDao = jpaItemRepository.save(item);
         log.info("Создана вещь DAO: \n{}", itemResultDao);
         ItemDto itemResultDto = ItemMapper.toItemDto(itemResultDao);
         log.info("Вещь DTO: \n{}", itemResultDto);
@@ -46,126 +60,203 @@ public class ItemServiceImpl implements ItemService {
     }
 
     /**
-     * Обновляет данные существующей вещи.
-     * Проверяет права на редактирование на основе ID пользователя.
+     * Обновляет существующую вещь.
      *
-     * @param userId  Уникальный идентификатор пользователя, пытающегося обновить вещь
-     * @param itemId  Уникальный идентификатор вещи, которую нужно обновить
-     * @param itemDto DTO с обновленными данными вещи
-     * @return DTO обновленной вещи
-     * @throws NotFoundException если пользователь не авторизован для редактирования вещи
+     * @param userId  идентификатор пользователя, который пытается обновить вещь
+     * @param itemId  идентификатор обновляемой вещи
+     * @param itemDto DTO объекта вещи с обновленными данными
+     * @return обновленная вещь в виде DTO
      */
     @Override
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
-        Item item = inMemoryItemStorage.getItemById(itemId);
-        checkAuthorization(userId, item);
+        Item item = checkItemExist(itemId);
+        userServiceImpl.checkUserExist(userId);
+        checkUserAuthorizationForItem(userId, item);
         log.info("Старая вещь DAO: \n{}", item);
         Optional.ofNullable(itemDto.getName()).ifPresent(item::setName);
         Optional.ofNullable(itemDto.getDescription()).ifPresent(item::setDescription);
         Optional.ofNullable(itemDto.getAvailable()).ifPresent(item::setAvailable);
         log.info("Обновлённая вещь DAO: \n{}", item);
-        ItemDto resultDto = ItemMapper.toItemDto(inMemoryItemStorage.updateItem(item));
+        ItemDto resultDto = ItemMapper.toItemDto(jpaItemRepository.save(item));
         log.info("Обновлённая вещь DTO: \n{}", resultDto);
         return resultDto;
     }
 
     /**
-     * Получает вещь по её уникальному идентификатору.
+     * Получает информацию о вещи по её идентификатору.
      *
-     * @param itemId Уникальный идентификатор вещи
-     * @return DTO найденной вещи
+     * @param userId идентификатор пользователя, запрашивающего информацию о вещи
+     * @param itemId идентификатор вещи
+     * @return DTO объекта вещи с информацией о бронированиях и комментариях
      */
     @Override
-    public ItemDto getItemById(long itemId) {
+    public ItemDtoBooking getItemById(long userId, long itemId) {
+        Item item = checkItemExist(itemId);
+        ItemDtoBooking itemDtoBooking = ItemMapper.toItemDtoBooking(item);
+        if (item.getOwner().getId() == userId) {
+            itemDtoBooking.setLastBooking(BookingMapper.toBookingDtoItem(
+                    jpaBookingRepository.findLastBookingByBookerId(
+                            itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
+            itemDtoBooking.setNextBooking(BookingMapper.toBookingDtoItem(
+                    jpaBookingRepository.findNextBookingByBookerId(
+                            itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
+        }
+        jpaCommentRepository.findCommentsByItemId(itemId).ifPresent(comment ->
+                itemDtoBooking.setComments(comment.stream().map(CommentMapper::toCommentDtoResponse).toList()));
         log.info("Получена вещь. ID вещи: {}", itemId);
-        return ItemMapper.toItemDto(inMemoryItemStorage.getItemById(itemId));
+        return itemDtoBooking;
     }
 
     /**
-     * Получает список всех вещей, принадлежащих пользователю с указанным идентификатором.
+     * Получает список всех вещей пользователя.
      *
-     * @param userId Уникальный идентификатор владельца вещей
-     * @return Список DTO всех вещей пользователя
+     * @param userId идентификатор пользователя
+     * @return список вещей в виде DTO
      */
     @Override
-    public List<ItemDto> getAllItemsFromUser(long userId) {
-        userServiceImpl.getUserByIdDto(userId);
+    public List<ItemDtoBooking> getAllItemsFromUser(long userId) {
+        userServiceImpl.checkUserExist(userId);
+        List<Item> items = jpaItemRepository.findAllByOwnerId(userId);
+        List<ItemDtoBooking> itemDtoBookings = items.stream().map(ItemMapper::toItemDtoBooking).toList();
+        for (ItemDtoBooking itemDtoBooking : itemDtoBookings) {
+            itemDtoBooking.setLastBooking(BookingMapper.toBookingDtoItem(
+                    jpaBookingRepository.findLastBookingByBookerId(
+                            itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
+            itemDtoBooking.setNextBooking(BookingMapper.toBookingDtoItem(
+                    jpaBookingRepository.findNextBookingByBookerId(
+                            itemDtoBooking.getId(), LocalDateTime.now()).orElse(null)));
+            jpaCommentRepository.findCommentsByItemId(itemDtoBooking.getId()).ifPresent(comment ->
+                    itemDtoBooking.setComments(comment.stream().map(CommentMapper::toCommentDtoResponse).toList()));
+        }
         log.info("Получен список вещей. ID владельца: {}.", userId);
-        return inMemoryItemStorage.getAllItemsFromUser(userId).stream().map(ItemMapper::toItemDto).toList();
+        return itemDtoBookings;
     }
 
     /**
-     * Выполняет поиск доступных вещей по тексту.
-     * Ищет в названии и описании вещи.
+     * Ищет доступные вещи по текстовому запросу.
      *
-     * @param text Текст для поиска
-     * @return Список DTO найденных доступных вещей
+     * @param text текст для поиска
+     * @return список найденных вещей в виде DTO
      */
     @Override
     public List<ItemDto> searchAvailableItemsByText(String text) {
-        List<Item> allItems = inMemoryItemStorage.getAllItems();
         if (text == null || text.isEmpty()) {
             log.warn("Не указан текст для поиска.");
             return List.of();
         }
-        List<ItemDto> resultSearch = allItems.stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().toUpperCase().contains(text.toUpperCase())
-                        || item.getDescription().toUpperCase().contains(text.toUpperCase()))
-                .map(ItemMapper::toItemDto).toList();
+        List<Item> allItems = jpaItemRepository
+                .findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase(text, text);
+        List<ItemDto> resultSearch = allItems.stream().map(ItemMapper::toItemDto).toList();
         log.info("Получен список вещей. Текст поиска: {} \n{}", text, resultSearch);
         return resultSearch;
     }
 
     /**
-     * Удаляет вещь по её уникальному идентификатору.
-     * Проверяет права на удаление на основе ID пользователя.
+     * Удаляет вещь по её идентификатору.
      *
-     * @param userId Уникальный идентификатор пользователя, пытающегося удалить вещь
-     * @param itemId Уникальный идентификатор вещи для удаления
-     * @throws NotFoundException если пользователь не авторизован для удаления вещи
+     * @param userId идентификатор пользователя, который пытается удалить вещь
+     * @param itemId идентификатор удаляемой вещи
      */
     @Override
     public void deleteItemById(long userId, long itemId) {
-        checkAuthorization(userId, inMemoryItemStorage.getItemById(itemId));
-        inMemoryItemStorage.deleteItemById(itemId);
+        Item item = checkItemExist(itemId);
+        userServiceImpl.checkUserExist(userId);
+        checkUserAuthorizationForItem(userId, item);
+        jpaItemRepository.delete(item);
         log.info("Удалена вещь. ID владельца: {}, ID вещи: {}", userId, itemId);
     }
 
     /**
-     * Удаляет все вещи, принадлежащие пользователю с указанным идентификатором.
+     * Удаляет все вещи пользователя.
      *
-     * @param userId Уникальный идентификатор владельца вещей для удаления
+     * @param userId идентификатор пользователя
      */
     @Override
     public void deleteAllItemsByUser(long userId) {
-        userServiceImpl.getUserByIdDto(userId);
-        inMemoryItemStorage.deleteAllItemsByUser(userId);
+        userServiceImpl.checkUserExist(userId);
+        jpaItemRepository.deleteAllByOwnerId(userId);
         log.info("Удалены все вещи. ID владельца: {}", userId);
     }
 
     /**
-     * Удаляет все вещи из хранилища.
+     * Удаляет все вещи из базы данных.
      */
     @Override
     public void deleteAllItems() {
-        inMemoryItemStorage.deleteAllItems();
+        jpaItemRepository.deleteAll();
         log.info("Удалены все вещи.");
     }
 
     /**
-     * Проверяет права на редактирование или удаление вещи.
-     * Выбрасывает исключение {@link NotFoundException}, если пользователь не является владельцем вещи.
+     * Проверяет существование вещи по её идентификатору.
      *
-     * @param userId Уникальный идентификатор пользователя
-     * @param item   Вещь, для которой проверяется авторизация
+     * @param itemId идентификатор вещи
+     * @return объект вещи
+     * @throws NotFoundException если вещь не найдена
      */
-    private void checkAuthorization(long userId, Item item) {
-        userServiceImpl.getUserByIdDto(userId);
-        log.debug("Проверка авторизации. ID владельца: {}, ID вещи: {}", userId, item.getId());
-        if (userId != item.getOwner()) {
-            throw new NotFoundException("Ошибка авторизации.");
+    @Override
+    public Item checkItemExist(long itemId) {
+        return jpaItemRepository.findById(itemId).orElseThrow(() -> {
+            String errorMessage = "Вещи с ID: " + itemId + " не существует.";
+            log.warn("Ошибка получения: {}", errorMessage);
+            return new NotFoundException(errorMessage);
+        });
+    }
+
+    /**
+     * Проверяет авторизацию пользователя для работы с вещью.
+     *
+     * @param userId идентификатор пользователя
+     * @param item   объект вещи
+     * @throws ForbiddenException если пользователь не является владельцем вещи
+     */
+    @Override
+    public void checkUserAuthorizationForItem(long userId, Item item) {
+        log.info("Проверка авторизации. ID владельца: {}, ID вещи: {}", userId, item.getId());
+        if (userId != item.getOwner().getId()) {
+            throw new ForbiddenException("Ошибка авторизации.");
         }
     }
 
+    /**
+     * Создает новый комментарий к вещи.
+     *
+     * @param authorId          идентификатор автора комментария
+     * @param itemId            идентификатор вещи, к которой оставляется комментарий
+     * @param commentDtoRequest DTO объекта комментария
+     * @return созданный комментарий в виде DTO
+     */
+    @Override
+    public CommentDtoResponse createComment(long authorId, long itemId, CommentDtoRequest commentDtoRequest) {
+        log.info("Начало метода createComment");
+        User author = userServiceImpl.checkUserExist(authorId);
+        Item item = checkItemExist(itemId);
+        checkAuthorAuthorizationForItem(authorId, itemId);
+        Comment comment = Comment.builder()
+                .text(commentDtoRequest.text())
+                .item(item)
+                .author(author)
+                .created(LocalDateTime.now())
+                .build();
+        jpaCommentRepository.save(comment);
+        log.info("Создан комментарий DAO:\n{}", comment);
+        CommentDtoResponse commentDtoResponse = CommentMapper.toCommentDtoResponse(comment);
+        log.info("Комментарий DTO:\n{}", commentDtoResponse);
+        return commentDtoResponse;
+    }
+
+    /**
+     * Проверяет авторизацию автора для оставления отзыва о вещи.
+     *
+     * @param bookerId идентификатор арендатора
+     * @param itemId   идентификатор вещи
+     * @throws ValidationException если авторизация не пройдена
+     */
+    public void checkAuthorAuthorizationForItem(long bookerId, long itemId) {
+        jpaBookingRepository.checkItemReviewAuthorizationAfterRental(bookerId, itemId, LocalDateTime.now()).orElseThrow(() -> {
+            String errorMessage = "Не пройдена авторизация. ID booker: " + bookerId + ", ID item: " + itemId;
+            log.warn("Ошибка: {}", errorMessage);
+            return new ValidationException(errorMessage);
+        });
+    }
 }

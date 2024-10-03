@@ -63,8 +63,7 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("Ошибка получения: {}", errorMessage);
             return new NotFoundException(errorMessage);
         });
-
-        log.info("Получен пользователь из хранилища. ID пользователя: {}.", userId);
+        log.debug("Получен пользователь из хранилища. ID пользователя: {}.", userId);
         return user;
     }
 
@@ -76,7 +75,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void deleteUserById(long userId) {
         users.remove(userId);
-        log.info("Удалён пользователь из хранилища. ID пользователя: {}.", userId);
+        log.debug("Удалён пользователь из хранилища. ID пользователя: {}.", userId);
     }
 
     /**
@@ -86,7 +85,7 @@ public class InMemoryUserStorage implements UserStorage {
      */
     @Override
     public List<User> getAllUsers() {
-        log.info("Получен список всех пользователей из хранилища.");
+        log.debug("Получен список всех пользователей из хранилища.");
         return new ArrayList<>(users.values());
     }
 
@@ -96,7 +95,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void deleteAllUsers() {
         users.clear();
-        log.info("Удалёны все пользователи из хранилища.");
+        log.debug("Удалёны все пользователи из хранилища.");
     }
 
     /**
