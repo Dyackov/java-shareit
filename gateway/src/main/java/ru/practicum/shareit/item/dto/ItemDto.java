@@ -49,6 +49,5 @@ public class ItemDto {
      * Дополнительная информация о запросе, с которым связана вещь.
      * Может быть null, если вещь не связана с запросом.
      */
-    private String request;
-
+    private Long requestId;
 }
