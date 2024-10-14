@@ -14,9 +14,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.enums.BookingStatus;
 import ru.practicum.shareit.booking.storage.JpaBookingRepository;
 import ru.practicum.shareit.item.dto.CommentDtoRequest;
-import ru.practicum.shareit.item.dto.CommentDtoResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoBooking;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.JpaItemRepository;
 import ru.practicum.shareit.user.model.User;
@@ -235,14 +233,12 @@ class ItemControllerTest {
 
     @Test
     void createComment_shouldReturnCreatedComment() throws Exception {
-        // Создаем пользователя
         User user = User.builder()
                 .name("John Doe")
                 .email("john.doe@example.com")
                 .build();
         user = jpaUserRepository.save(user);
 
-        // Создаем предмет
         Item item = Item.builder()
                 .name("Item 1")
                 .description("Description for Item 1")
@@ -251,7 +247,6 @@ class ItemControllerTest {
                 .build();
         item = jpaItemRepository.save(item);
 
-        // Создаем бронирование, чтобы пользователь мог оставить комментарий
         Booking booking = Booking.builder()
                 .item(item)
                 .booker(user)
@@ -261,7 +256,6 @@ class ItemControllerTest {
                 .build();
         jpaBookingRepository.save(booking);
 
-        // Создаем комментарий
         CommentDtoRequest commentDtoRequest = CommentDtoRequest.builder()
                 .text("Great item!")
                 .build();
@@ -308,8 +302,8 @@ class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", notNullValue())) // Убедитесь, что возвращаемый список не null
-                .andExpect(jsonPath("$[0].name", is("Item 1"))) // Убедитесь, что в результате есть доступные вещи
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(jsonPath("$[0].name", is("Item 1")))
                 .andDo(print());
     }
 }

@@ -21,7 +21,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Тестируем равенство с самим собой
         assertThat(item.equals(item), is(true));
     }
 
@@ -36,7 +35,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Тестируем сравнение с null
         assertThat(item.equals(null), is(false));
     }
 
@@ -51,7 +49,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Тестируем сравнение с объектом другого класса
         assertThat(item.equals("Not an Item"), is(false));
     }
 
@@ -75,7 +72,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Тестируем равенство объектов с одинаковыми полями
         assertThat(item1.equals(item2), is(true));
     }
 
@@ -99,7 +95,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(2L).description("Another Request").build())
                 .build();
 
-        // Тестируем неравенство объектов с различными полями
         assertThat(item1.equals(item2), is(false));
     }
 
@@ -123,7 +118,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Хеш-коды должны быть одинаковыми для равных объектов
         assertThat(item1.hashCode(), is(item2.hashCode()));
     }
 
@@ -139,7 +133,7 @@ class ItemTest {
                 .build();
 
         Item item2 = Item.builder()
-                .id(2L) // Разный ID
+                .id(2L)
                 .name("Test Item")
                 .description("Test Description")
                 .available(true)
@@ -147,7 +141,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных ID
         assertThat(item1.hashCode(), is(not(item2.hashCode())));
     }
 
@@ -164,14 +157,13 @@ class ItemTest {
 
         Item item2 = Item.builder()
                 .id(1L)
-                .name("Another Item") // Разное название
+                .name("Another Item")
                 .description("Test Description")
                 .available(true)
                 .owner(User.builder().id(1L).name("Owner").build())
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных названий
         assertThat(item1.hashCode(), is(not(item2.hashCode())));
     }
 
@@ -189,13 +181,12 @@ class ItemTest {
         Item item2 = Item.builder()
                 .id(1L)
                 .name("Test Item")
-                .description("Another Description") // Разное описание
+                .description("Another Description")
                 .available(true)
                 .owner(User.builder().id(1L).name("Owner").build())
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных описаний
         assertThat(item1.hashCode(), is(not(item2.hashCode())));
     }
 
@@ -205,7 +196,7 @@ class ItemTest {
                 .id(1L)
                 .name("Test Item")
                 .description("Test Description")
-                .available(true) // Доступно
+                .available(true)
                 .owner(User.builder().id(1L).name("Owner").build())
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
@@ -214,12 +205,11 @@ class ItemTest {
                 .id(1L)
                 .name("Test Item")
                 .description("Test Description")
-                .available(false) // Недоступно
+                .available(false)
                 .owner(User.builder().id(1L).name("Owner").build())
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных доступностей
         assertThat(item1.hashCode(), is(not(item2.hashCode())));
     }
 
@@ -243,7 +233,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(1L).description("Request").build())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных владельцев
         assertThat(item1.hashCode(), is(not(item2.hashCode())));
     }
 
@@ -267,7 +256,6 @@ class ItemTest {
                 .request(ItemRequest.builder().id(2L).description("Another Request").build()) // Разный запрос
                 .build();
 
-        // Хеш-коды должны различаться из-за разных запросов
         assertThat(item1.hashCode(), is(not(item2.hashCode())));
     }
 }

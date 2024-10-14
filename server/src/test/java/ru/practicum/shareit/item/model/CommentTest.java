@@ -16,12 +16,11 @@ class CommentTest {
         Comment comment = Comment.builder()
                 .id(1L)
                 .text("Great item!")
-                .item(new Item()) // Используйте правильную инициализацию Item
-                .author(new User()) // Используйте правильную инициализацию User
+                .item(new Item())
+                .author(new User())
                 .created(LocalDateTime.now())
                 .build();
 
-        // Тестируем равенство с самим собой
         assertThat(comment.equals(comment), is(true));
     }
 
@@ -35,7 +34,6 @@ class CommentTest {
                 .created(LocalDateTime.now())
                 .build();
 
-        // Тестируем сравнение с null
         assertThat(comment.equals(null), is(false));
     }
 
@@ -49,7 +47,6 @@ class CommentTest {
                 .created(LocalDateTime.now())
                 .build();
 
-        // Тестируем сравнение с объектом другого класса
         assertThat(comment.equals("Not a Comment"), is(false));
     }
 
@@ -71,7 +68,6 @@ class CommentTest {
                 .created(comment1.getCreated())
                 .build();
 
-        // Тестируем равенство объектов с одинаковыми полями
         assertThat(comment1.equals(comment2), is(true));
     }
 
@@ -86,14 +82,13 @@ class CommentTest {
                 .build();
 
         Comment comment2 = Comment.builder()
-                .id(2L) // Разный ID
-                .text("Awesome item!") // Разный текст
+                .id(2L)
+                .text("Awesome item!")
                 .item(new Item())
                 .author(new User())
                 .created(LocalDateTime.now())
                 .build();
 
-        // Тестируем неравенство объектов с различными полями
         assertThat(comment1.equals(comment2), is(false));
     }
 
@@ -115,7 +110,6 @@ class CommentTest {
                 .created(comment1.getCreated())
                 .build();
 
-        // Хеш-коды должны быть одинаковыми для равных объектов
         assertThat(comment1.hashCode(), is(comment2.hashCode()));
     }
 
@@ -130,14 +124,13 @@ class CommentTest {
                 .build();
 
         Comment comment2 = Comment.builder()
-                .id(2L) // Разный ID
+                .id(2L)
                 .text("Great item!")
                 .item(new Item())
                 .author(new User())
                 .created(comment1.getCreated())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных ID
         assertThat(comment1.hashCode(), is(not(comment2.hashCode())));
     }
 
@@ -153,13 +146,12 @@ class CommentTest {
 
         Comment comment2 = Comment.builder()
                 .id(1L)
-                .text("Awesome item!") // Разный текст
+                .text("Awesome item!")
                 .item(new Item())
                 .author(new User())
                 .created(comment1.getCreated())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных текстов
         assertThat(comment1.hashCode(), is(not(comment2.hashCode())));
     }
 
@@ -178,10 +170,9 @@ class CommentTest {
                 .text("Great item!")
                 .item(new Item())
                 .author(new User())
-                .created(LocalDateTime.now().plusDays(1)) // Разное время создания
+                .created(LocalDateTime.now().plusDays(1))
                 .build();
 
-        // Хеш-коды должны различаться из-за разных времён создания
         assertThat(comment1.hashCode(), is(not(comment2.hashCode())));
     }
 }

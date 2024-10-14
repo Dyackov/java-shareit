@@ -19,12 +19,11 @@ class BookingTest {
                 .id(1L)
                 .start(LocalDateTime.now())
                 .end(LocalDateTime.now().plusDays(1))
-                .item(new Item()) // Используйте правильную инициализацию Item
-                .booker(new User()) // Используйте правильную инициализацию User
+                .item(new Item())
+                .booker(new User())
                 .status(BookingStatus.APPROVED)
                 .build();
 
-        // Тестируем равенство с самим собой
         assertThat(booking.equals(booking), is(true));
     }
 
@@ -39,7 +38,6 @@ class BookingTest {
                 .status(BookingStatus.APPROVED)
                 .build();
 
-        // Тестируем сравнение с null
         assertThat(booking.equals(null), is(false));
     }
 
@@ -54,7 +52,6 @@ class BookingTest {
                 .status(BookingStatus.APPROVED)
                 .build();
 
-        // Тестируем сравнение с объектом другого класса
         assertThat(booking.equals("Not a Booking"), is(false));
     }
 
@@ -78,7 +75,6 @@ class BookingTest {
                 .status(booking1.getStatus())
                 .build();
 
-        // Тестируем равенство объектов с одинаковыми полями
         assertThat(booking1.equals(booking2), is(true));
     }
 
@@ -94,7 +90,7 @@ class BookingTest {
                 .build();
 
         Booking booking2 = Booking.builder()
-                .id(2L) // Разный ID
+                .id(2L)
                 .start(LocalDateTime.now())
                 .end(LocalDateTime.now().plusDays(1))
                 .item(new Item())
@@ -102,7 +98,6 @@ class BookingTest {
                 .status(BookingStatus.APPROVED)
                 .build();
 
-        // Тестируем неравенство объектов с различными полями
         assertThat(booking1.equals(booking2), is(false));
     }
 
@@ -126,7 +121,6 @@ class BookingTest {
                 .status(booking1.getStatus())
                 .build();
 
-        // Хеш-коды должны быть одинаковыми для равных объектов
         assertThat(booking1.hashCode(), is(booking2.hashCode()));
     }
 
@@ -142,7 +136,7 @@ class BookingTest {
                 .build();
 
         Booking booking2 = Booking.builder()
-                .id(2L) // Разный ID
+                .id(2L)
                 .start(booking1.getStart())
                 .end(booking1.getEnd())
                 .item(booking1.getItem())
@@ -150,7 +144,6 @@ class BookingTest {
                 .status(booking1.getStatus())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных ID
         assertThat(booking1.hashCode(), is(not(booking2.hashCode())));
     }
 
@@ -174,7 +167,6 @@ class BookingTest {
                 .status(booking1.getStatus())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных времён начала
         assertThat(booking1.hashCode(), is(not(booking2.hashCode())));
     }
 
@@ -192,13 +184,12 @@ class BookingTest {
         Booking booking2 = Booking.builder()
                 .id(1L)
                 .start(booking1.getStart())
-                .end(LocalDateTime.now().plusDays(2)) // Разное время окончания
+                .end(LocalDateTime.now().plusDays(2))
                 .item(booking1.getItem())
                 .booker(booking1.getBooker())
                 .status(booking1.getStatus())
                 .build();
 
-        // Хеш-коды должны различаться из-за разных времён окончания
         assertThat(booking1.hashCode(), is(not(booking2.hashCode())));
     }
 
@@ -219,10 +210,9 @@ class BookingTest {
                 .end(booking1.getEnd())
                 .item(booking1.getItem())
                 .booker(booking1.getBooker())
-                .status(BookingStatus.REJECTED) // Разный статус
+                .status(BookingStatus.REJECTED)
                 .build();
 
-        // Хеш-коды должны различаться из-за разных статусов
         assertThat(booking1.hashCode(), is(not(booking2.hashCode())));
     }
 }

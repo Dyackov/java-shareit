@@ -10,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.enums.BookingStatus;
@@ -22,7 +21,8 @@ import ru.practicum.shareit.user.storage.JpaUserRepository;
 
 import java.time.LocalDateTime;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -41,14 +41,12 @@ class BookingControllerTest {
 
     @Test
     void createBooking_shouldReturnCreatedBooking() throws Exception {
-        // Создаем владельца вещи
         User owner = User.builder()
                 .name("John Doe")
                 .email("john.doe@example.com")
                 .build();
         owner = jpaUserRepository.save(owner);
 
-        // Создаем вещь
         Item item = Item.builder()
                 .name("Item 1")
                 .description("Description for Item 1")
@@ -57,14 +55,12 @@ class BookingControllerTest {
                 .build();
         item = jpaItemRepository.save(item);
 
-        // Создаем пользователя, который будет делать бронирование
         User booker = User.builder()
                 .name("Jane Doe")
                 .email("jane.doe@example.com")
                 .build();
         booker = jpaUserRepository.save(booker);
 
-        // Создаем запрос на бронирование
         BookingDtoRequest bookingDtoRequest = BookingDtoRequest.builder()
                 .itemId(item.getId())
                 .start(LocalDateTime.now().plusDays(1))
@@ -73,7 +69,6 @@ class BookingControllerTest {
 
         String bookingDtoRequestJson = mapper.writeValueAsString(bookingDtoRequest);
 
-        // Выполняем запрос на создание бронирования
         mockMvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", booker.getId()) // Используем ID забронировавшего
                         .contentType(MediaType.APPLICATION_JSON)

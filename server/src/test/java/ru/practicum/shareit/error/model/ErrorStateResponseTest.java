@@ -9,13 +9,10 @@ class ErrorStateResponseTest {
 
     @Test
     void testErrorStateResponseConstructorAndGetter() {
-        // Данные для теста
         String expectedError = "Ошибка аутентификации";
 
-        // Создание экземпляра ErrorStateResponse
         ErrorStateResponse errorStateResponse = new ErrorStateResponse(expectedError);
 
-        // Проверка, что значение поля error установлено корректно
         assertThat(errorStateResponse.error(), is(expectedError));
     }
 }

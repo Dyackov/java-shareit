@@ -1,13 +1,11 @@
 package ru.practicum.shareit.error.handler;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.core.MethodParameter;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingRequestHeaderException;
 import ru.practicum.shareit.error.exception.ForbiddenException;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.UnsupportedStateException;
@@ -46,26 +44,19 @@ class ErrorHandlerTest {
 
     @Test
     void handleValidationExceptionTest() {
-        // Создаем мок BindingResult
         BindingResult bindingResult = mock(BindingResult.class);
 
-        // Создаем список ошибок валидации
         List<FieldError> fieldErrors = new ArrayList<>();
         fieldErrors.add(new FieldError("objectName", "fieldName", "Field error message"));
 
-        // Настраиваем мок, чтобы он возвращал список ошибок
         when(bindingResult.getFieldErrors()).thenReturn(fieldErrors);
 
-        // Создаем мок исключения
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
         when(exception.getBindingResult()).thenReturn(bindingResult);
 
-        // Вызываем метод
         ErrorResponse response = errorHandler.handleValidationException(exception);
 
-        // Проверяем результат
         assertThat(response.getError()).isEqualTo("Ошибка валидации.");
-
     }
 
     @Test
