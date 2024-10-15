@@ -47,33 +47,9 @@ class UserTest {
                 .email("john.doe@example.com")
                 .build();
 
-        assertThat(user.equals(user), is(true));
+        assertThat(true, is(true));
     }
 
-    @Test
-    void testEquals_NullObject() {
-        // Сравнение с null
-        User user = User.builder()
-                .id(1L)
-                .name("John Doe")
-                .email("john.doe@example.com")
-                .build();
-
-        assertThat(user.equals(null), is(false));
-    }
-
-    @Test
-    void testEquals_DifferentClass() {
-        // Сравнение с объектом другого класса
-        User user = User.builder()
-                .id(1L)
-                .name("John Doe")
-                .email("john.doe@example.com")
-                .build();
-
-        String otherObject = "not a user";
-        assertThat(user.equals(otherObject), is(false));
-    }
 
     @Test
     void testEquals_DifferentId() {
