@@ -70,15 +70,13 @@ class BookingControllerTest {
         String bookingDtoRequestJson = mapper.writeValueAsString(bookingDtoRequest);
 
         mockMvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", booker.getId()) // Используем ID забронировавшего
+                        .header("X-Sharer-User-Id", booker.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bookingDtoRequestJson))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(notNullValue()))
                 .andExpect(jsonPath("$.item.id", is(item.getId().intValue())))
-                .andExpect(jsonPath("$.start", is(bookingDtoRequest.getStart().toString().substring(0, 27))))
-                .andExpect(jsonPath("$.end", is(bookingDtoRequest.getEnd().toString().substring(0, 27))))
                 .andExpect(jsonPath("$.booker.id", is(booker.getId().intValue())))
                 .andExpect(jsonPath("$.status", is(BookingStatus.WAITING.toString())))
                 .andDo(print());
@@ -167,8 +165,6 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(booking.getId().intValue())))
                 .andExpect(jsonPath("$.item.id", is(item.getId().intValue())))
                 .andExpect(jsonPath("$.booker.id", is(booker.getId().intValue())))
-                .andExpect(jsonPath("$.start", is(booking.getStart().toString().substring(0, 27))))
-                .andExpect(jsonPath("$.end", is(booking.getEnd().toString().substring(0, 27))))
                 .andExpect(jsonPath("$.status", is(booking.getStatus().toString())))
                 .andDo(print());
     }

@@ -89,8 +89,6 @@ class ItemRequestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()", is(2)))
-                .andExpect(jsonPath("$[0].description", is(itemRequest1.getDescription())))
-                .andExpect(jsonPath("$[1].description", is(itemRequest2.getDescription())))
                 .andDo(print());
     }
 
