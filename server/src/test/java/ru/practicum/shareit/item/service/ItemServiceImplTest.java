@@ -161,21 +161,21 @@ class ItemServiceImplTest {
         when(userServiceImpl.checkUserExist(1L)).thenReturn(user);
         when(jpaItemRepository.findAllByOwnerId(1L)).thenReturn(List.of(item));
 
-        List<ItemDtoBooking> AllItemsFromUser = itemServiceImpl.getAllItemsFromUser(1L);
+        List<ItemDtoBooking> allItemsFromUser = itemServiceImpl.getAllItemsFromUser(1L);
 
-        assertNotNull(AllItemsFromUser);
-        assertEquals(item.getId(), AllItemsFromUser.getFirst().getId());
-        assertEquals(item.getName(), AllItemsFromUser.getFirst().getName());
-        assertEquals(item.getDescription(), AllItemsFromUser.getFirst().getDescription());
-        assertEquals(item.getAvailable(), AllItemsFromUser.getFirst().getAvailable());
+        assertNotNull(allItemsFromUser);
+        assertEquals(item.getId(), allItemsFromUser.getFirst().getId());
+        assertEquals(item.getName(), allItemsFromUser.getFirst().getName());
+        assertEquals(item.getDescription(), allItemsFromUser.getFirst().getDescription());
+        assertEquals(item.getAvailable(), allItemsFromUser.getFirst().getAvailable());
         verify(jpaItemRepository, times(1)).findAllByOwnerId(1L);
     }
 
     @Test
     void searchAvailableItemsByText() {
         when(jpaItemRepository
-                .findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase
-                        ("Молоток", "Молоток")).thenReturn(List.of(item));
+                .findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase(
+                        "Молоток", "Молоток")).thenReturn(List.of(item));
 
         List<ItemDto> searchAvailableItemsByText = itemServiceImpl.searchAvailableItemsByText("Молоток");
         List<ItemDto> searchAvailableItemsByTextNull = itemServiceImpl.searchAvailableItemsByText("");
@@ -187,8 +187,8 @@ class ItemServiceImplTest {
         assertEquals(item.getDescription(), searchAvailableItemsByText.getFirst().getDescription());
         assertEquals(item.getAvailable(), searchAvailableItemsByText.getFirst().getAvailable());
         verify(jpaItemRepository, times(1))
-                .findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase
-                        ("Молоток", "Молоток");
+                .findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase(
+                        "Молоток", "Молоток");
     }
 
     @Test

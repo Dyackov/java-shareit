@@ -24,17 +24,16 @@ public class ItemDto {
 
     /**
      * Название вещи.
-     * Не может быть null или пустым.
+     * Не может быть пустым.
      */
-    @NotNull(message = "Имя вещи не может быть null.")
     @NotBlank(message = "Имя вещи не может быть пустым.")
     private String name;
 
     /**
      * Описание вещи.
-     * Не может быть null или пустым.
+     * Не может быть пустым.
      */
-    @NotNull(message = "Описание не может быть null.")
+
     @NotBlank(message = "Описание не может быть пустым.")
     private String description;
 

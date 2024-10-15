@@ -10,5 +10,5 @@ package ru.practicum.shareit.error.model;
  *
  * @param error сообщение об ошибке, которое будет возвращено клиенту.
  */
-public record ErrorStateResponse(String error) {
+public record ErrorStateResponse(String error){
 }
