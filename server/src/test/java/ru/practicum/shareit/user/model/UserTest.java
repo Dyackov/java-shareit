@@ -40,8 +40,7 @@ class UserTest {
 
     @Test
     void testEquals_SameObject() {
-        // Сравнение объекта с самим собой
-        User user = User.builder()
+        User.builder()
                 .id(1L)
                 .name("John Doe")
                 .email("john.doe@example.com")
